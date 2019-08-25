@@ -27,8 +27,9 @@ client.on('ready', () => {
 
 client.on('message', message => {
     if (message.content.charAt(0) === prefix && message.content.length > 1 && !message.author.bot) {
-        const args = message.content.slice(prefix.length).split(' ');
-        const command = args.shift().toLowerCase();
+        var args = message.content.slice(prefix.length).split(' ');
+        var command = args.shift().toLowerCase();
+        args = array.join(' ').split(','); //probably inefficient, but we aren't concerned about performance for now
         try {
             commands[command](message, args);
         } catch (e) {

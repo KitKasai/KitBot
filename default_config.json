@@ -1,0 +1,5 @@
+{
+	"token": "insert bot token here",
+	"modules": ["chat.js"],
+	"prefix": "!"
+}
