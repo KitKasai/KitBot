@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const debug = require('debug')('tft_event.js');
 
+const util = require('./util.js');
+
 const Schema = mongoose.Schema;
 
 var userSchema = new Schema({
@@ -12,11 +14,30 @@ var userSchema = new Schema({
 
 var User = mongoose.model('User', userSchema);
 
-module.exports = {
+module.exports.commands = {
     register(message, args) {
         //register user for tft competition
         //args: leagueUsername
         //if user is already registered, do not let them register again
+        if (args.length != 1) {
+            util.wrongArgs(message, ['leagueUsername']);
+            return;
+        }
+        var username = args[0]; //sanitize input?
+        isUserRegistered(message.author.id).then(registered => {
+            if (registered) {
+                message.channel.send('Already registered! If you would like to change your registered username, please contact an event mod');
+            } else {
+                var user = new User({
+                    discordId: message.author.id,
+                    leagueUsername: username,
+                    challenges: [],
+                    score: 0
+                });
+                user.save();
+                message.channel.send(`Registered as ${username}`);
+            }
+        });
     },
 
     approve(message, args) {
@@ -27,30 +48,23 @@ module.exports = {
     deny(message, args) {
         //deny a user's submission for a challenge
         //args: challengeId, leagueUsername, reason
+    },
+
+    delete(message, args) {
+        //delete a user from collection. does nothing if user does not exist
     }
 }
 
 function getLeagueUsername(discordId, callback) {
     //callback is called with username, null if the user is not registered
-    User.findOne({'discordId': discordId}, (err, user) => {
-        if (err) {
-            debug(err);
-        }
-        if (user) {
-            callback(user.leagueUsername);
-        } else {
-            callback(null);
-        }
-    }
+    return User.findOne({'discordId': discordId}).then((user) => {
+        return new Promise((resolve, reject) => {resolve(user.leagueUsername)})
+    });
 }
 
-function isUserRegistered(discordId, callback) {
-    //calls the callback function with true if user is registered, false if not registered
-    User.findOne({'discordId': discordId}, (err, user) => {
-        if (err) {
-            debug(err);
-            //some error handling here?
-        }
-        callback(user !== null);
+function isUserRegistered(discordId) {
+    //returns a promise containing a boolean of whether or not the user is registered 
+    return User.findOne({'discordId': discordId}).then((user) => {
+        return new Promise((resolve, reject) => {resolve(user!==null)})
     });
 }
