@@ -3,6 +3,7 @@ const debug = require('debug')('tft_event.js');
 
 const util = require('./util.js');
 
+mongoose.connect('mongodb://localhost/tft_event', {useNewUrlParser:true});
 const Schema = mongoose.Schema;
 
 var userSchema = new Schema({
@@ -39,6 +40,16 @@ module.exports.commands = {
             }
         });
     },
+};
+
+module.exports.admin = {
+    unregister(message, args) {
+        util.getUserFromTag(args[0]).then((user) => {
+            User.deleteOne({discordId: user.id}).then(() => {
+                message.channel.send(`User ${user.username} unregistered from competition`);
+            });
+        });
+    },
 
     approve(message, args) {
         //approve a user's submission for a challenge
@@ -50,11 +61,18 @@ module.exports.commands = {
         //args: challengeId, leagueUsername, reason
     },
 
-    delete(message, args) {
-        //delete a user from collection. does nothing if user does not exist
+    rename(message, args) {
+        //change the registered username for a user
+        //args: @user, newName
+        if (args.length != 2) {
+            util.wrongArgs(message,['@user', 'newLeagueUsername']);
+            return;
+        }
+        util.getUserFromTag(args[0]).then((user) => {
+            User.updateOne({discordId: user.id}, {leagueUsername: args[1]}).then(() => message.channel.send(`${args[0]} renamed to ${args[1]}`));
+        });
     }
-}
-
+};
 function getLeagueUsername(discordId, callback) {
     //callback is called with username, null if the user is not registered
     return User.findOne({'discordId': discordId}).then((user) => {
@@ -65,6 +83,7 @@ function getLeagueUsername(discordId, callback) {
 function isUserRegistered(discordId) {
     //returns a promise containing a boolean of whether or not the user is registered 
     return User.findOne({'discordId': discordId}).then((user) => {
+        debug(`isUserRegistered: ${user}`);
         return new Promise((resolve, reject) => {resolve(user!==null)})
-    });
+    }).catch((reason) => debug(reason));
 }

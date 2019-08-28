@@ -30,6 +30,7 @@ module.exports.admin = {
                 if (config.admins.indexOf(user.id) === -1) {
                     config.admins.push(user.id);
                     debug(`admins: ${config.admins}`);
+                    util.writeJSON('config.json', config); 
                 }
             }).catch((reason) => debug(reason));
         }

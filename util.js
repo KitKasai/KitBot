@@ -5,6 +5,10 @@ module.exports = {
 	    var raw = fs.readFileSync(filename);
 	    return JSON.parse(raw);
     },
+    
+    writeJSON(filename, content) {
+        fs.writeFileSync(filename, JSON.stringify(content, null, 4));
+    },
 
     //sends a message to the channel listing correct args
     wrongArgs(message, args) {

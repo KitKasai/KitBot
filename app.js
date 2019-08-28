@@ -26,7 +26,7 @@ for(var i = 0; i < config.modules.length; i++) {
         if (! (command in commands)) {
             commands[command] = chat_module.commands[command];
         } else {
-            debug(`command with name {command} already exists`);
+            debug(`command with name ${command} already exists`);
         }
     }
     
@@ -35,7 +35,7 @@ for(var i = 0; i < config.modules.length; i++) {
             commands[command] = adminWrapper(chat_module.admin[command]);
             debug(`added admin command ${command}`);
         } else {
-            debug(`command with name {command} already exists`);
+            debug(`command with name ${command} already exists`);
         }
     }
 }
